@@ -1,0 +1,413 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Hypixel Skyblock Bazaar</title>
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+	<button class="btn">Reload Data</button><a>     </a><a id="ld">..........</a>
+	<span id="plot" style="width:80%;height:900px;display:block;float:left;"></span>
+	<span id="lookup" style="width:19%;height:900px;display:block;float:right;">
+		<h2>Lookup Item</h2></a>
+		<label for="input">Item:</label><input type="text" id="input" name="input" style="width:175px;"><button class="search" type=submit>Search</button>
+		<div id="se"></div>
+		<div id="g2" style="width:100%;height:350px;display:block;float:right;"></div>
+		<div id="minions"></div>
+	</span>
+	<script>
+		const items = ["STOCK_OF_STONKS", "WHITE_GIFT", "GREEN_GIFT", "RED_GIFT", "GREEN_CANDY", "PURPLE_CANDY", "SUMMONING_EYE", "SUPER_COMPACTOR_3000", "HOT_POTATO_BOOK", "WOLF_TOOTH", "GOLDEN_TOOTH", "TARANTULA_WEB", "TARANTULA_SILK", "REVENANT_FLESH", "REVENANT_VISCERA", "ENCHANTED_OAK_LOG", "ENCHANTED_DARK_OAK_LOG", "ENCHANTED_ACACIA_LOG", "ENCHANTED_JUNGLE_LOG", "ENCHANTED_SPRUCE_LOG", "ENCHANTED_BIRCH_LOG", "ENCHANTED_RAW_FISH", "ENCHANTED_PUFFERFISH", "ENCHANTED_COOKED_FISH", "ENCHANTED_RAW_SALMON", "ENCHANTED_COOKED_SALMON", "ENCHANTED_PRISMARINE_SHARD", "ENCHANTED_PRISMARINE_CRYSTALS", "ENCHANTED_CLAY_BALL", "ENCHANTED_WATER_LILY", "ENCHANTED_SPONGE", "ENCHANTED_ROTTEN_FLESH", "ENCHANTED_BONE", "ENCHANTED_STRING", "ENCHANTED_SPIDER_EYE", "ENCHANTED_FERMENTED_SPIDER_EYE", "ENCHANTED_GUNPOWDER", "ENCHANTED_EYE_OF_ENDER", "ENCHANTED_GHAST_TEAR", "ENCHANTED_SLIME_BALL", "ENCHANTED_SLIME_BLOCK", "ENCHANTED_BLAZE_POWDER", "ENCHANTED_BLAZE_ROD", "ENCHANTED_MAGMA_CREAM", "ENCHANTED_COBBLESTONE", "ENCHANTED_COAL", "ENCHANTED_COAL_BLOCK", "ENCHANTED_IRON", "ENCHANTED_IRON_BLOCK", "ENCHANTED_GOLD", "ENCHANTED_GOLD_BLOCK", "ENCHANTED_DIAMOND", "ENCHANTED_DIAMOND_BLOCK", "ENCHANTED_LAPIS_LAZULI", "ENCHANTED_LAPIS_LAZULI_BLOCK", "ENCHANTED_EMERALD", "ENCHANTED_EMERALD_BLOCK", "ENCHANTED_REDSTONE", "ENCHANTED_REDSTONE_BLOCK", "ENCHANTED_QUARTZ", "ENCHANTED_OBSIDIAN", "ENCHANTED_GLOWSTONE_DUST", "ENCHANTED_GLOWSTONE", "ENCHANTED_FLINT", "ENCHANTED_ICE", "ENCHANTED_PACKED_ICE", "ENCHANTED_ENDSTONE", "ENCHANTED_SNOW_BLOCK", "ENCHANTED_CARROT", "ENCHANTED_GOLDEN_CARROT", "ENCHANTED_POTATO", "ENCHANTED_BAKED_POTATO", "ENCHANTED_PUMPKIN", "ENCHANTED_MELON", "ENCHANTED_MELON_BLOCK", "ENCHANTED_GLISTERING_MELON", "ENCHANTED_HUGE_MUSHROOM_1", "ENCHANTED_HUGE_MUSHROOM_2", "ENCHANTED_COCOA", "ENCHANTED_COOKIE", "ENCHANTED_CACTUS", "ENCHANTED_CACTUS_GREEN", "ENCHANTED_SUGAR_CANE", "ENCHANTED_SUGAR", "ENCHANTED_PAPER", "ENCHANTED_FEATHER", "ENCHANTED_LEATHER", "ENCHANTED_RAW_BEEF", "ENCHANTED_PORK", "ENCHANTED_GRILLED_PORK", "ENCHANTED_RAW_CHICKEN", "ENCHANTED_CAKE", "ENCHANTED_EGG", "SUPER_EGG", "ENCHANTED_MUTTON", "ENCHANTED_COOKED_MUTTON", "ENCHANTED_RABBIT_HIDE", "ENCHANTED_RABBIT_FOOT", "ENCHANTED_RABBIT", "ENCHANTED_NETHER_STALK", "ENCHANTED_BREAD", "ENCHANTED_MELON", "ENCHANTED_CARROT", "ENCHANTED_SPIDER_EYE", "COMPACTOR", "IRON_INGOT", "GOLD_INGOT", "ENCHANTED_ENDER_PEARL", "ENCHANTED_CLAY_BALL", "SAND"];
+
+		const siteUrl = "https://api.hypixel.net/skyblock/bazaar/products?key=e4bd75b4-5ea9-41fa-9bfa-0605ccf93d58";
+		const siteUrlP = "https://api.hypixel.net/skyblock/bazaar/product?key=e4bd75b4-5ea9-41fa-9bfa-0605ccf93d58&productId=";
+
+		let itemcount = 0;
+		let ddata = [];
+		let storedData = {};
+		
+		const getData = function(product) {
+			$.getJSON(siteUrlP+product, function(result) {
+				let str = "..........";
+				let ys = [];
+				for(let i = 0; i < result.product_info.buy_summary.length; i++) {
+					ys.push(result.product_info.buy_summary[i].pricePerUnit);
+				}
+				for(let i = 0; i < result.product_info.sell_summary.length; i++) {
+					ys.push(result.product_info.sell_summary[i].pricePerUnit);
+				}
+				let entry = {
+					type: 'box',
+					y: ys,
+					name: result.product_info.product_id.toLowerCase().replace(/_/g, " ").replace(/^./, result.product_info.product_id[0].toUpperCase()),
+					boxpoints: 'all',
+					jitter: 0,
+					whiskerwidth: 0.2,
+					marker: {
+						size: 2
+					},
+					line: {
+						width: 1
+					}
+				};
+				ddata.push(entry);
+				storedData[result.product_info.product_id] = result.product_info;
+				switch(Math.floor(ddata.length/11)) {
+					case 0:
+						str = "..........";
+						break;
+					case 1:
+						str = ":.........";
+						break;
+					case 2:
+						str = "::........";
+						break;
+					case 3:
+						str = ":::.......";
+						break;
+					case 4:
+						str = "::::......";
+						break;
+					case 5:
+						str = ":::::.....";
+						break;
+					case 6:
+						str = "::::::....";
+						break;
+					case 7:
+						str = ":::::::...";
+						break;
+					case 8:
+						str = "::::::::..";
+						break;
+					case 9:
+						str = ":::::::::.";
+						break;
+					case 10:
+						str = "::::::::::";
+						drawPlot();
+						minions();
+						break;
+				}
+				document.getElementById("ld").innerHTML = str;
+			});
+		}
+
+		const drawPlot = function() {
+			const PLOT = document.getElementById('plot');
+
+			const layout = {
+				title: 'Bazaar Listings',
+				yaxis: {
+					animate: false,
+					range: [0, 10000],
+					autotick: true,
+					showgrid: true,
+					zeroline: true,
+					gridcolor: 'rgb(255, 255, 255)',
+					gridwidth: 1,
+					zerolinecolor: 'rgb(255, 255, 255)',
+					zerlinewidth: 2,
+					ticklen: 2,
+					showticksuffix: 'all',
+					ticksuffix: ' coins'
+				},
+				xaxis: {
+					ticklen: 2,
+					autotick: false,
+					animate: false,
+					dtick: 1
+				},
+				margin: {
+					b: 210
+				},
+				paper_bgcolor: 'rgb(243, 243, 243)',
+				blot_bgcolor: 'rgb(243, 243, 243)',
+				showlegend: false,
+				displayModeBar: false
+			};
+
+			Plotly.newPlot('plot', ddata, layout, {displayModeBar: false});
+		}
+
+		for(let i = 0; i < items.length; i++) {
+			getData(items[i]);
+		}
+
+		$('.btn').click(function() {
+			itemcount = 0;
+			ddata = [];
+			for(let i = 0; i < items.length; i++) {
+				getData(items[i]);
+			}
+		});
+
+		const itemStatus = function(status) {
+			if(status.result === "success") {
+				let item = status.json.product_id;
+				let buy = (status.json.buy_summary[0].pricePerUnit).toFixed(2);
+				let sell = (status.json.sell_summary[0].pricePerUnit).toFixed(2);
+				let buyV = status.json.quick_status.buyVolume;
+				let sellV = status.json.quick_status.sellVolume;
+				let ppu = (sell-buy).toFixed(2);
+				let pp = (ppu*100/buy).toFixed(2);
+				let costB2 = +status.json.week_historic[status.json.week_historic.length-2].buyCoins/+status.json.week_historic[status.json.week_historic.length-2].buyVolume;
+				let costS2 = +status.json.week_historic[status.json.week_historic.length-2].sellCoins/+status.json.week_historic[status.json.week_historic.length-2].sellVolume;
+				let costB24 = +status.json.week_historic[status.json.week_historic.length-48].buyCoins/+status.json.week_historic[status.json.week_historic.length-48].buyVolume;
+				let costS24 = +status.json.week_historic[status.json.week_historic.length-48].sellCoins/+status.json.week_historic[status.json.week_historic.length-48].sellVolume;
+				let costB7 = +status.json.week_historic[status.json.week_historic.length-140].buyCoins/+status.json.week_historic[status.json.week_historic.length-140].buyVolume;
+				let costS7 = +status.json.week_historic[status.json.week_historic.length-140].sellCoins/+status.json.week_historic[status.json.week_historic.length-140].sellVolume;
+				let html = "</br><p>Item: " + item + "</br>" +
+					"Current Buy Price: " + buy + "</br>" +
+					"Current Sell Price: " + sell + "</br>" +
+					"Buy/Sell Volume: " + buyV + " - " + sellV + "</br>" +
+					"Net profit per unit: " + ppu + "</br>" +
+					"Profit margin: " + pp + "%</br>" +
+					"Avg. Price 2h ago: " + ((costB2+costS2)/2).toFixed(2) + "</br>" +
+					"Avg. Price 24h ago: " + ((costB24+costS24)/2).toFixed(2) + "</br>" +
+					"Avg. Price 7d ago: " + ((costB7+costS7)/2).toFixed(2) + "</p>";
+				document.getElementById("se").innerHTML = html;
+				let x = [];
+				let y = [];
+			    	for(let i = 0; i < status.json.week_historic.length; i++) {
+					x.push(i/2);
+					y.push((((+status.json.week_historic[i].buyCoins/+status.json.week_historic[i].buyVolume)+(+status.json.week_historic[i].sellCoins/+status.json.week_historic[i].sellVolume))/2).toFixed(2));
+				}
+				let data = [{
+					x: x,
+					y: y,
+					type: 'lines+markers'
+				}];
+				let layout = {
+					title: "7 Day Price History",
+					yaxis: {
+						range: [Math.min(y)/2, Math.max(y)+(Math.min(y)/2)],
+						animate: false,
+						autotick: true,
+						showgrid: true,
+						zeroline: true,
+						gridwidth: 1,
+						ticklen: 2,
+						showticksuffix: 'all',
+						ticksuffix: ' coins'
+					},
+					xaxis: {
+						ticklen: 2,
+						autotick: true,
+						animate: false,
+						showticksuffix: 'all',
+						ticksuffix: ' hours'
+					},
+					showlegend: false,
+					displaymodebar: false
+				};
+				PLOT2 = document.getElementById('g2');
+				Plotly.newPlot('g2', data, layout, { displayModeBar: false });
+			} else {
+				document.getElementById("se").innerHTML = "<p>Could not find that item</p>";
+			}
+		}
+
+		$('.search').click(function() {
+			let status = {};
+			let ss = false;
+			if(storedData[document.getElementById("input").value.replace(/ /g, "_").toUpperCase()]) {
+				status["method"] = "stored";
+				status["result"] = "success";
+				status["json"] = storedData[document.getElementById("input").value.replace(/ /g, "_").toUpperCase()];
+				itemStatus(status);
+			} else {
+				$.getJSON(siteUrlP+(document.getElementById("input").value.replace(/ /g, "_").toUpperCase()), function(result) {
+					if(result.success === true) {
+						ss = true;
+						status["method"] = "API";
+						status["result"] = "success";
+						status["json"] = result.product_info;
+					}
+					itemStatus(status);
+				});
+				if (!ss) {
+					itemStatus({method: "API", result: "failure", json:"Could not find that item"});
+					document.getElementById("g2").innerHTML = "";
+				}
+			} 
+		});
+
+		const minions = function() {
+			let sheet = { minion: [
+				{name: "Cobblestone",
+					resource: "ENCHANTED_COBBLESTONE",
+					production: 200/160},
+				{name: "Obsidian",
+					resource: "ENCHANTED_OBSIDIAN",
+					production: 51.4/160},
+				{name: "Glowstone",
+					resource: "ENCHANTED_GLOWSTONE_DUST",
+					production: 284.2/160},
+				{name: "Gravel",
+					resource: "ENCHANTED_FLINT",
+					production: 94.7/160},
+				{name: "Sand",
+					resource: "SAND",
+					production: 94.7},
+				{name: "Clay",
+					resource: "ENCHANTED_CLAY_BALL",
+					production: 300/160},
+				{name: "Ice",
+					resource: "ENCHANTED_ICE",
+					production: 94.7/160},
+				{name: "Snow",
+					resource: "ENCHANTED_SNOW_BLOCK",
+					production: 757.9/(160*4)},
+				{name: "Coal",
+					resource: "ENCHANTED_COAL",
+					production: 180/160},
+				{name: "Iron",
+					resource: "ENCHANTED_IRON",
+					production: 150/160},
+				{name: "Gold",
+					resource: "ENCHANTED_GOLD",
+					production: 112.5/160},
+				{name: "Diamond",
+					resource: "ENCHANTED_DIAMOND",
+					production: 81.8/160},
+				{name: "Lapis Lazuli",
+					resource: "ENCHANTED_LAPIS_LAZULI",
+					production: 469.6/160},
+				{name: "Redstone",
+					resource: "ENCHANTED_REDSTONE",
+					production: 352.2/160},
+				{name: "Emerald",
+					resource: "ENCHANTED_EMERALD",
+					production: 85.7/160},
+				{name: "Quartz",
+					resource: "ENCHANTED_QUARTZ",
+					production: 105.9/160},
+				{name: "End Stone",
+					resource: "ENCHANTED_ENDSTONE",
+					production: 94.7/160},
+				{name: "Wheat",
+					resource: "ENCHANTED_BREAD",
+					production: 180/60},
+				{name: "Melon",
+					resource: "ENCHANTED_MELON",
+					production: 583.8/160},
+				{name: "Pumpkin",
+					resource: "ENCHANTED_PUMPKIN",
+					production: 75/160},
+				{name: "Carrot",
+					resource: "ENCHANTED_CARROT",
+					production: 385.7/160},
+				{name: "Potato",
+					resource: "ENCHANTED_POTATO",
+					production: 385.7/160},
+				{name: "Mushroom",
+					resource: "ENCHANTED_HUGE_MUSHROOM_1",
+					production: 1/160},
+				{name: "Cactus",
+					resource: "ENCHANTED_CACTUS_GREEN",
+					production: 85.7/160},
+				{name: "Cocoa Bean",
+					resource: "ENCHANTED_COCOA",
+					production: 257.1/160},
+				{name: "Sugar Cane",
+					resource: "ENCHANTED_SUGAR",
+					production: 225/160},
+				{name: "Nether Wart",
+					resource: "ENCHANTED_NETHER_STALK",
+					production: 43.9/160},
+				{name: "Flower",
+					resource: "ENCHANTED_COOKED_SALMON",
+					production: 0},
+				{name: "Fish",
+					resource: "ENCHANTED_RAW_FISH",
+					production: 28.8/160},
+				{name: "Zombie",
+					resource: "ENCHANTED_ROTTEN_FLESH",
+					production: 90/160},
+				{name: "Revenant",
+					resource: "ENCHANTED_ROTTEN_FLESH",
+					production: 331.6/160},
+				{name: 	"Skeleton",
+					resource: "ENCHANTED_BONE",
+					production: 90/160},
+				{name: "Creeper",
+					resource: "ENCHANTED_GUNPOWDER",
+					production: 85.7/160},
+				{name: "Spider",
+					resource: "ENCHANTED_STRING",
+					production: 90/160},
+				{name: "Tarantula",
+					resource: "ENCHANTED_STRING",
+					production: 413.1/160},
+				{name: "Cave Spider",
+					resource: "ENCHANTED_SPIDER_EYE",
+					production: 90/160},
+				{name: "Blaze",
+					resource: "ENCHANTED_BLAZE_POWDER",
+					production: 72/160},
+				{name: "Magma Cube",
+					resource: "ENCHANTED_MAGMA_CREAM",
+					production: 129.6/160},
+				{name: "Enderman",
+					resource: "ENCHANTED_ENDER_PEARL",
+					production: 72/20},
+				{name: "Ghast",
+					resource: "ENCHANTED_GHAST_TEAR",
+					production: 43.9/160},
+				{name: "Slime",
+					resource: "ENCHANTED_SLIME_BALL",
+					production: 170.5/160},
+				{name: "Cow",
+					resource: "ENCHANTED_RAW_BEEF",
+					production: 90/160},
+				{name: "Pig",
+					resource: "ENCHANTED_PORK",
+					production: 90/160},
+				{name: "Chicken",
+					resource: "ENCHANTED_RAW_CHICKEN",
+					production: 90/160},
+				{name: "Sheep",
+					resource: "ENCHANTED_MUTTON",
+					production: 100/160},
+				{name: "Rabbit",
+					resource: "ENCHANTED_RABBIT",
+					production: 162/160},
+				{name: "Oak",
+					resource: "ENCHANTED_OAK_LOG",
+					production: 189.5/160},
+				{name: "Spruce",
+					resource: "ENCHANTED_SPRUCE_LOG",
+					production: 189.5/160},
+				{name: "Birch",
+					resource: "ENCHANTED_BIRCH_LOG",
+					production: 189.5/160},
+				{name: "Dark Oak",
+					resource: "ENCHANTED_DARK_OAK_LOG",
+					production: 189.5/160},
+				{name: "Acacia",
+					resource: "ENCHANTED_ACACIA_LOG",
+					production: 189.5/160},
+				{name: "Jungle",
+					resource: "ENCHANTED_JUNGLE_LOG",
+					production: 189.5/160}
+			]};
+			let best = [];
+			for (let i = 0; i < sheet.minion.length; i++) {
+				let profit = sheet.minion[i].production*(storedData[sheet.minion[i].resource].buy_summary[0].pricePerUnit);
+				best.push([sheet.minion[i].name, profit]);
+			}
+			best = best.sort(function(a, b) {
+				return a[1] < b[1] ? 1 : -1;
+			});
+			document.getElementById("minions").innerHTML = "<h3>Top Minions (Profit/hr @ T7)</h3>" +
+				"<ol><li>" + best[0][0] + ": " + best[0][1].toFixed(2) + " coins</li><li>" + 
+				best[1][0] + ": " + best[1][1].toFixed(2) + " coins</li><li>" + 
+				best[2][0] + ": " + best[2][1].toFixed(2) + " coins</li><li>" + 
+				best[3][0] + ": " + best[3][1].toFixed(2) + " coins</li><li>" + 
+				best[4][0] + ": " + best[4][1].toFixed(2) + " coins</li></ol>";
+			console.log(best);
+		};
+	</script>
+</body>
+</html>
